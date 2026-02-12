@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Driving License Management</title>
+
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/bootstrap-icons.css}">
+    <link rel="icon" th:href="@{/icon/license.png}">
+</head>
+
+<body class="bg-light">
+
+<div class="container py-5">
+
+    <div class="card shadow-sm border-0" style="background: #E9F7EF;">
+        <div class="card-header border-0 py-3 d-flex justify-content-between align-items-center"
+             style="background: #D6F5E3;">
+
+            <div class="d-flex align-items-center gap-2">
+
+                <a th:if="${isTrash}"
+                   th:href="@{/licenses}"
+                   class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i>
+                </a>
+
+                <h5 class="mb-0 fw-bold" style="color:#0F5132;"
+                    th:text="${isTrash} ? 'Driving Licenses (Trash)' : 'Driving License Management'">
+                </h5>
+
+            </div>
+
+            <button type="button"
+                    class="btn btn-success"
+                    th:unless="${isTrash}"
+                    onclick="openAddModal()">
+                <i class="bi bi-plus-lg"></i> Add License
+            </button>
+
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">ID</th>
+                        <th>Name</th>
+                        <th>Family</th>
+                        <th>License</th>
+                        <th>City Issued</th>
+                        <th>Certificate Date</th>
+                        <th>Expiry Date</th>
+                        <th class="text-end pe-4">Actions</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr th:if="${licenses.content.empty}">
+                        <td colspan="8" class="text-center py-4 text-muted">
+                            No data available
+                        </td>
+                    </tr>
+
+                    <tr th:each="l : ${licenses.content}">
+                        <td class="ps-4" th:text="${l.id}"></td>
+                        <td th:text="${l.name}"></td>
+                        <td th:text="${l.family}"></td>
+                        <td th:text="${l.drivingLicenseNumber}"></td>
+                        <td th:text="${l.cityIssued}"></td>
+                        <td th:text="${l.certificateDate}"></td>
+                        <td th:text="${l.expiryDate}"></td>
+
+                        <td class="text-end pe-4">
+
+                            <div th:unless="${isTrash}">
+                                <button class="btn btn-sm btn-outline-warning me-1"
+                                        th:onclick="openEditModal(
+                                          [[${l.id}]],
+                                          [[${l.name}]],
+                                          [[${l.family}]],
+                                          [[${l.drivingLicenseNumber}]],
+                                          [[${l.cityIssued}]],
+                                          [[${l.certificateDate}]],
+                                          [[${l.expiryDate}]]
+                                        )">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+
+                                <button class="btn btn-sm btn-outline-danger"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#deleteModal"
+                                        th:data-id="${l.id}">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+
+                            <div th:if="${isTrash}">
+                                <form method="post"
+                                      th:action="@{/licenses/restore/{id}(id=${l.id})}"
+                                      class="d-inline">
+                                    <button class="btn btn-sm btn-outline-success" type="submit">
+                                        <i class="bi bi-arrow-counterclockwise"></i>
+                                    </button>
+                                </form>
+                            </div>
+
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card-footer bg-white text-end py-3" th:unless="${isTrash}">
+            <a th:href="@{/licenses/trash}" class="btn btn-outline-secondary">
+                <i class="bi bi-trash"></i> Trash
+            </a>
+        </div>
+
+    </div>
+</div>
+
+<!-- GREEN MODAL -->
+<div class="modal fade" id="licenseModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0">
+
+            <div class="modal-header text-white" style="background: #198754;">
+                <h5 class="modal-title" id="modalTitle">Driving License Form</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body" style="background: #E9F7EF;">
+
+                <form id="licenseForm" method="post" th:object="${license}"
+                      th:action="${formAction != null ? formAction : '/licenses'}">
+
+                    <input type="hidden" name="_method" id="methodField"
+                           th:value="${license.id != null ? 'put' : ''}"
+                           th:disabled="${license.id == null}">
+
+                    <div class="row g-3">
+
+                        <div class="col-md-6">
+                            <label class="form-label">Name</label>
+                            <input id="name" type="text" class="form-control" th:field="*{name}">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Family</label>
+                            <input id="family" type="text" class="form-control" th:field="*{family}">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">License Number</label>
+                            <input id="drivingLicenseNumber" type="text" class="form-control"
+                                   th:field="*{drivingLicenseNumber}">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">City Issued</label>
+                            <input id="cityIssued" type="text" class="form-control" th:field="*{cityIssued}">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Certificate Date</label>
+                            <input id="certificateDate" type="date" class="form-control" th:field="*{certificateDate}">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Expiry Date</label>
+                            <input id="expiryDate" type="date" class="form-control" th:field="*{expiryDate}">
+                        </div>
+
+                    </div>
+
+                    <div class="text-end mt-4">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-success">Save Changes</button>
+                    </div>
+
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- DELETE MODAL (THIS WAS MISSING) -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center p-4">
+                <h5 class="mb-3">Are you sure?</h5>
+                <form id="deleteForm" method="post">
+                    <input type="hidden" name="_method" value="delete">
+                    <button type="submit" class="btn btn-danger">Yes, Delete</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+<script th:src="@{/js/script.js}"></script>
+
+</body>
+</html>
