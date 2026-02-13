@@ -11,10 +11,10 @@ public class DrivingLicenseDto {
 
     private Long id;
 
-    @Pattern(regexp = "^[a-zA-Z\\s]{3,20}$", message = "Invalid Name")
+    @Pattern(regexp = "^[a-zA-Z\\s]{3,20}$", message = "Invalid First name")
     private String name;
 
-    @Pattern(regexp = "^[a-zA-Z\\s]{3,20}$", message = "Invalid Family")
+    @Pattern(regexp = "^[a-zA-Z\\s]{3,20}$", message = "Invalid Family name")
     private String family;
 
     @NotNull(message = "Driving License Number is required")

@@ -27,4 +27,7 @@ public interface DrivingLicenseService {
     void restoreSoftDeletedById(Long id);
 
     Page<DrivingLicenseDto> findByFamilyAndName(String family, String name, Pageable pageable);
+
+    boolean existsByDrivingLicenseNumber(String drivingLicenseNumber);
+
 }

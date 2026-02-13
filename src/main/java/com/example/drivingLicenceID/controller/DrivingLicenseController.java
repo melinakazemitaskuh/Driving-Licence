@@ -39,13 +39,15 @@ public class DrivingLicenseController {
     @GetMapping
     public String getAllLicenses(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "5") int size,
             @RequestParam(required = false) String family,
             @RequestParam(required = false) String name,
             Model model
     ) {
-
         prepareListModel(model, page, size, family, name);
+
+
+        model.addAttribute("isTrash", false);// so it never becomes null in thymeleaf
 
         if (!model.containsAttribute("license")) {
             model.addAttribute("license", new DrivingLicenseDto());
@@ -58,15 +60,19 @@ public class DrivingLicenseController {
     @GetMapping("/trash")
     public String getTrash(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "5") int size,
             Model model
     ) {
-
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
         Page<DrivingLicenseDto> deletedPage = drivingLicenseService.findAllSoftDeleted(pageable);
 
         model.addAttribute("licenses", deletedPage);
         model.addAttribute("isTrash", true);
+
+        if (!model.containsAttribute("license")) {
+            model.addAttribute("license", new DrivingLicenseDto());
+        }
+
         return "license/list";
     }
 
@@ -78,19 +84,27 @@ public class DrivingLicenseController {
             Model model,
             RedirectAttributes redirectAttributes,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "5") int size
     ) {
 
-        // ✅ Cross-field validation (BindingResult)
+        // date validation (BindingResult)
         if (licenseDto.getCertificateDate() != null
                 && licenseDto.getExpiryDate() != null
                 && licenseDto.getCertificateDate().isAfter(licenseDto.getExpiryDate())) {
             result.rejectValue("certificateDate", "invalidDateOrder",
                     "Certificate date cannot be after expiry date");
         }
+        if (licenseDto.getDrivingLicenseNumber() != null
+                && drivingLicenseService.existsByDrivingLicenseNumber(licenseDto.getDrivingLicenseNumber())) {
+            result.rejectValue("drivingLicenseNumber", "duplicate", "License number already exists");
+        }
+
 
         if (result.hasErrors()) {
             prepareListModel(model, page, size, null, null);
+
+            model.addAttribute("isTrash", false);
+
             model.addAttribute("showModal", true);
             model.addAttribute("formAction", "/licenses");
             return "license/list";
@@ -109,10 +123,11 @@ public class DrivingLicenseController {
             BindingResult result,
             Model model,
             RedirectAttributes redirectAttributes,
-            @RequestParam(defaultValue = "0") int page
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size
     ) {
 
-        // ✅ Cross-field validation (BindingResult)
+        // date validation (BindingResult)
         if (licenseDto.getCertificateDate() != null
                 && licenseDto.getExpiryDate() != null
                 && licenseDto.getCertificateDate().isAfter(licenseDto.getExpiryDate())) {
@@ -121,7 +136,10 @@ public class DrivingLicenseController {
         }
 
         if (result.hasErrors()) {
-            prepareListModel(model, page, 10, null, null);
+            prepareListModel(model, page, size, null, null);
+
+            model.addAttribute("isTrash", false);
+
             model.addAttribute("showModal", true);
             model.addAttribute("formAction", "/licenses/" + id);
             licenseDto.setId(id);

@@ -24,12 +24,12 @@ public class DrivingLicense extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Pattern(regexp = "^[a-zA-Z\\s]{3,20}$", message = "Invalid Name")
-    @Column(name = "name", length = 20, nullable = false)
+    @Pattern(regexp = "^[a-zA-Z\\s]{3,20}$", message = "Invalid First Name")
+    @Column(name = "first_name", length = 20, nullable = false)
     private String name;
 
-    @Pattern(regexp = "^[a-zA-Z\\s]{3,20}$", message = "Invalid Family")
-    @Column(name = "family", length = 20, nullable = false)
+    @Pattern(regexp = "^[a-zA-Z\\s]{3,20}$", message = "Invalid Family Name")
+    @Column(name = "family_name", length = 20, nullable = false)
     private String family;
 
     @Column(name = "license_number", length = 30, nullable = false, unique = true)

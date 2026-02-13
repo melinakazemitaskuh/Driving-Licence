@@ -14,6 +14,26 @@ document.addEventListener('DOMContentLoaded', function () {
     const expInput = document.getElementById('expiryDate');
     const cityInput = document.getElementById('cityIssued');
 
+
+    // ✅ NEW: Show toast if exists
+    const toastEl = document.querySelector(".toast");
+    if (toastEl) {
+        const toast = new bootstrap.Toast(toastEl, {
+            delay: 2500
+        });
+        toast.show();
+    }
+
+
+    // ✅ NEW: Auto open modal if validation error happened
+    // thymeleaf injects this variable only when needed
+    if (typeof showModal !== "undefined" && showModal === true) {
+        if (licenseModal) {
+            licenseModal.show();
+        }
+    }
+
+
     // -------- ADD --------
     window.openAddModal = function () {
         if (!licenseModal) return;
@@ -28,6 +48,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         licenseModal.show();
     }
+
 
     // -------- EDIT --------
     window.openEditModal = function (id, name, family, number, city, certDate, expDate) {
@@ -48,6 +69,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         licenseModal.show();
     }
+
 
     // -------- DELETE --------
     const deleteModal = document.getElementById('deleteModal');

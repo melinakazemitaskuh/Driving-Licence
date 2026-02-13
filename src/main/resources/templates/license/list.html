@@ -6,34 +6,43 @@
 
     <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
     <link rel="stylesheet" th:href="@{/css/bootstrap-icons.css}">
-    <link rel="icon" th:href="@{/icon/license.png}">
 </head>
 
 <body class="bg-light">
 
-<div class="container py-5">
+<div class="container-fluid py-5 px-5">
+
+    <!-- Toast Message -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+        <div class="toast align-items-center text-bg-success border-0"
+             role="alert" aria-live="assertive" aria-atomic="true"
+             th:if="${successMessage}">
+            <div class="d-flex">
+                <div class="toast-body" th:text="${successMessage}"></div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
 
     <div class="card shadow-sm border-0" style="background: #E9F7EF;">
         <div class="card-header border-0 py-3 d-flex justify-content-between align-items-center"
              style="background: #D6F5E3;">
 
             <div class="d-flex align-items-center gap-2">
-
-                <a th:if="${isTrash}"
-                   th:href="@{/licenses}"
+                <a th:if="${isTrash == true}"
+                   th:href="@{/licenses(page=0, size=5)}"
                    class="btn btn-sm btn-outline-secondary">
                     <i class="bi bi-arrow-left"></i>
                 </a>
 
                 <h5 class="mb-0 fw-bold" style="color:#0F5132;"
-                    th:text="${isTrash} ? 'Driving Licenses (Trash)' : 'Driving License Management'">
+                    th:text="${isTrash == true} ? 'Driving Licenses (Trash)' : 'Driving License Management'">
                 </h5>
-
             </div>
 
             <button type="button"
                     class="btn btn-success"
-                    th:unless="${isTrash}"
+                    th:if="${isTrash != true}"
                     onclick="openAddModal()">
                 <i class="bi bi-plus-lg"></i> Add License
             </button>
@@ -46,12 +55,12 @@
                     <thead class="table-light">
                     <tr>
                         <th class="ps-4">ID</th>
-                        <th>Name</th>
-                        <th>Family</th>
-                        <th>License</th>
+                        <th>First Name</th>
+                        <th>Family Name</th>
+                        <th>License Number</th>
                         <th>City Issued</th>
                         <th>Certificate Date</th>
-                        <th>Expiry Date</th>
+                        <th>Expire Date</th>
                         <th class="text-end pe-4">Actions</th>
                     </tr>
                     </thead>
@@ -74,7 +83,7 @@
 
                         <td class="text-end pe-4">
 
-                            <div th:unless="${isTrash}">
+                            <div th:if="${isTrash != true}">
                                 <button class="btn btn-sm btn-outline-warning me-1"
                                         th:onclick="openEditModal(
                                           [[${l.id}]],
@@ -96,7 +105,7 @@
                                 </button>
                             </div>
 
-                            <div th:if="${isTrash}">
+                            <div th:if="${isTrash == true}">
                                 <form method="post"
                                       th:action="@{/licenses/restore/{id}(id=${l.id})}"
                                       class="d-inline">
@@ -113,16 +122,72 @@
             </div>
         </div>
 
-        <div class="card-footer bg-white text-end py-3" th:unless="${isTrash}">
-            <a th:href="@{/licenses/trash}" class="btn btn-outline-secondary">
-                <i class="bi bi-trash"></i> Trash
-            </a>
+        <!-- Pagination Footer -->
+        <div class="card-footer bg-white py-3 d-flex justify-content-end align-items-center">
+
+            <nav th:if="${licenses.totalPages > 1}">
+                <ul class="pagination mb-0">
+
+                    <li class="page-item" th:classappend="${licenses.first} ? 'disabled'">
+                        <a class="page-link"
+                           th:if="${isTrash != true}"
+                           th:href="@{/licenses(page=${licenses.number - 1}, size=5, family=${param.family}, name=${param.name})}">
+                            Prev
+                        </a>
+                        <a class="page-link"
+                           th:if="${isTrash == true}"
+                           th:href="@{/licenses/trash(page=${licenses.number - 1}, size=5)}">
+                            Prev
+                        </a>
+                    </li>
+
+                    <li class="page-item"
+                        th:each="i : ${#numbers.sequence(0, licenses.totalPages - 1)}"
+                        th:classappend="${i == licenses.number} ? 'active'">
+                        <a class="page-link"
+                           th:if="${isTrash != true}"
+                           th:text="${i + 1}"
+                           th:href="@{/licenses(page=${i}, size=5, family=${param.family}, name=${param.name})}">
+                        </a>
+                        <a class="page-link"
+                           th:if="${isTrash == true}"
+                           th:text="${i + 1}"
+                           th:href="@{/licenses/trash(page=${i}, size=5)}">
+                        </a>
+                    </li>
+
+                    <li class="page-item" th:classappend="${licenses.last} ? 'disabled'">
+                        <a class="page-link"
+                           th:if="${isTrash != true}"
+                           th:href="@{/licenses(page=${licenses.number + 1}, size=5, family=${param.family}, name=${param.name})}">
+                            Next
+                        </a>
+                        <a class="page-link"
+                           th:if="${isTrash == true}"
+                           th:href="@{/licenses/trash(page=${licenses.number + 1}, size=5)}">
+                            Next
+                        </a>
+                    </li>
+
+                </ul>
+            </nav>
+
+            <div>
+                <a th:if="${isTrash != true}" th:href="@{/licenses/trash(page=0, size=5)}" class="btn btn-outline-secondary">
+                    <i class="bi bi-trash"></i> Trash
+                </a>
+
+                <a th:if="${isTrash == true}" th:href="@{/licenses(page=0, size=5)}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+            </div>
+
         </div>
 
     </div>
 </div>
 
-<!-- GREEN MODAL -->
+<!-- MODAL -->
 <div class="modal fade" id="licenseModal" tabindex="-1" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0">
@@ -138,40 +203,81 @@
                       th:action="${formAction != null ? formAction : '/licenses'}">
 
                     <input type="hidden" name="_method" id="methodField"
-                           th:value="${license.id != null ? 'put' : ''}"
-                           th:disabled="${license.id == null}">
+                           th:value="${license != null and license.id != null ? 'put' : ''}"
+                           th:disabled="${license == null or license.id == null}">
 
                     <div class="row g-3">
 
+                        <!-- Name -->
                         <div class="col-md-6">
                             <label class="form-label">Name</label>
-                            <input id="name" type="text" class="form-control" th:field="*{name}">
+                            <input id="name" type="text"
+                                   class="form-control"
+                                   th:field="*{name}"
+                                   th:classappend="${#fields.hasErrors('name')} ? 'is-invalid' : ''">
+                            <div class="invalid-feedback"
+                                 th:if="${#fields.hasErrors('name')}"
+                                 th:errors="*{name}"></div>
                         </div>
 
+                        <!-- Family -->
                         <div class="col-md-6">
                             <label class="form-label">Family</label>
-                            <input id="family" type="text" class="form-control" th:field="*{family}">
+                            <input id="family" type="text"
+                                   class="form-control"
+                                   th:field="*{family}"
+                                   th:classappend="${#fields.hasErrors('family')} ? 'is-invalid' : ''">
+                            <div class="invalid-feedback"
+                                 th:if="${#fields.hasErrors('family')}"
+                                 th:errors="*{family}"></div>
                         </div>
 
+                        <!-- License Number -->
                         <div class="col-md-6">
                             <label class="form-label">License Number</label>
-                            <input id="drivingLicenseNumber" type="text" class="form-control"
-                                   th:field="*{drivingLicenseNumber}">
+                            <input id="drivingLicenseNumber" type="text"
+                                   class="form-control"
+                                   th:field="*{drivingLicenseNumber}"
+                                   th:classappend="${#fields.hasErrors('drivingLicenseNumber')} ? 'is-invalid' : ''">
+                            <div class="invalid-feedback"
+                                 th:if="${#fields.hasErrors('drivingLicenseNumber')}"
+                                 th:errors="*{drivingLicenseNumber}"></div>
                         </div>
 
+                        <!-- City Issued -->
                         <div class="col-md-6">
                             <label class="form-label">City Issued</label>
-                            <input id="cityIssued" type="text" class="form-control" th:field="*{cityIssued}">
+                            <input id="cityIssued" type="text"
+                                   class="form-control"
+                                   th:field="*{cityIssued}"
+                                   th:classappend="${#fields.hasErrors('cityIssued')} ? 'is-invalid' : ''">
+                            <div class="invalid-feedback"
+                                 th:if="${#fields.hasErrors('cityIssued')}"
+                                 th:errors="*{cityIssued}"></div>
                         </div>
 
+                        <!-- Certificate Date -->
                         <div class="col-md-6">
                             <label class="form-label">Certificate Date</label>
-                            <input id="certificateDate" type="date" class="form-control" th:field="*{certificateDate}">
+                            <input id="certificateDate" type="date"
+                                   class="form-control"
+                                   th:field="*{certificateDate}"
+                                   th:classappend="${#fields.hasErrors('certificateDate')} ? 'is-invalid' : ''">
+                            <div class="invalid-feedback"
+                                 th:if="${#fields.hasErrors('certificateDate')}"
+                                 th:errors="*{certificateDate}"></div>
                         </div>
 
+                        <!-- Expiry Date -->
                         <div class="col-md-6">
                             <label class="form-label">Expiry Date</label>
-                            <input id="expiryDate" type="date" class="form-control" th:field="*{expiryDate}">
+                            <input id="expiryDate" type="date"
+                                   class="form-control"
+                                   th:field="*{expiryDate}"
+                                   th:classappend="${#fields.hasErrors('expiryDate')} ? 'is-invalid' : ''">
+                            <div class="invalid-feedback"
+                                 th:if="${#fields.hasErrors('expiryDate')}"
+                                 th:errors="*{expiryDate}"></div>
                         </div>
 
                     </div>
@@ -188,7 +294,7 @@
     </div>
 </div>
 
-<!-- DELETE MODAL (THIS WAS MISSING) -->
+<!-- DELETE MODAL -->
 <div class="modal fade" id="deleteModal" tabindex="-1">
     <div class="modal-dialog modal-sm modal-dialog-centered">
         <div class="modal-content">
@@ -203,6 +309,10 @@
         </div>
     </div>
 </div>
+
+<script th:if="${showModal}">
+    var showModal = true;
+</script>
 
 <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 <script th:src="@{/js/script.js}"></script>

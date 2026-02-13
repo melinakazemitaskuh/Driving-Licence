@@ -15,7 +15,6 @@ import java.util.Optional;
 @Repository
 public interface DrivingLicenseRepository extends JpaRepository<DrivingLicense, Long> {
 
-    // Only soft-deleted
     @Query(
             value = "SELECT * FROM driving_licenses WHERE deleted = true",
             countQuery = "SELECT count(*) FROM driving_licenses WHERE deleted = true",
@@ -23,7 +22,6 @@ public interface DrivingLicenseRepository extends JpaRepository<DrivingLicense, 
     )
     Page<DrivingLicense> findAllSoftDeletedLicenses(Pageable pageable);
 
-    // All records (including soft-deleted)
     @Query(
             value = "SELECT * FROM driving_licenses",
             countQuery = "SELECT count(*) FROM driving_licenses",
@@ -31,16 +29,16 @@ public interface DrivingLicenseRepository extends JpaRepository<DrivingLicense, 
     )
     Page<DrivingLicense> findAllIncludingSoftDeleted(Pageable pageable);
 
-    // Restore a soft-deleted record
+    // Restore soft-deleted record
     @Transactional
     @Modifying
     @Query(value = "UPDATE driving_licenses SET deleted = false WHERE id = :id", nativeQuery = true)
     void restoreSoftDeletedLicenseById(@Param("id") Long id);
 
     // others
-    boolean existsByDrivingLicenseNumber(String drivingLicenseNumber);
-
-    Optional<DrivingLicense> findActiveLicenseByDrivingLicenseNumber(String drivingLicenseNumber);
 
     Page<DrivingLicense> findActiveLicensesByFamilyAndName(String family, String name, Pageable pageable);
+
+    boolean existsByDrivingLicenseNumber(String drivingLicenseNumber);
+
 }

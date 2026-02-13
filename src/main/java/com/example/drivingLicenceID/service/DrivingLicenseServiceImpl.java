@@ -34,12 +34,6 @@ public class DrivingLicenseServiceImpl implements DrivingLicenseService {
             throw new IllegalArgumentException("ID cannot be null for update");
         }
 
-        // ✅ lock license number (server-side)
-        DrivingLicense existing = drivingLicenseRepository.findById(drivingLicenseDto.getId()).orElse(null);
-        if (existing != null) {
-            drivingLicenseDto.setDrivingLicenseNumber(existing.getDrivingLicenseNumber());
-        }
-
         DrivingLicense entity = drivingLicenseMapper.toEntity(drivingLicenseDto);
         drivingLicenseRepository.save(entity);
     }
@@ -47,7 +41,7 @@ public class DrivingLicenseServiceImpl implements DrivingLicenseService {
     @Transactional
     @Override
     public void deleteById(Long id) {
-        drivingLicenseRepository.deleteById(id); // triggers soft delete via @SQLDelete
+        drivingLicenseRepository.deleteById(id); // soft delete
     }
 
     @Override
@@ -94,4 +88,10 @@ public class DrivingLicenseServiceImpl implements DrivingLicenseService {
         return drivingLicenseRepository.findActiveLicensesByFamilyAndName(family, name, pageable)
                 .map(drivingLicenseMapper::toDto);
     }
+
+    @Override
+    public boolean existsByDrivingLicenseNumber(String drivingLicenseNumber) {
+        return drivingLicenseRepository.existsByDrivingLicenseNumber(drivingLicenseNumber);
+    }
+
 }
